@@ -67,4 +67,59 @@ S->b->T로 갈때 좀 어렵게 느껴지는데 유량상쇄를 통해 음의 �
 
 따라서 경우1이든 경우2이든 최대유량은 3임을 알 수 있습니다.
 
-노드6개일때도 생각을 해보았는데 좀 더 복잡하지만 해볼만 했고, 직접해보면 이해에 더 도움이 되는 것 같습니다.
+노드6개일때도 생각을 해보았는데 좀 더 복잡하지만 해볼만 했고, 직접해보면 이해에 더 도움이 되는 것 같습니다.  
+
+
+## 코드 실행 및 결과
+---
+제가 코딩을 잘 못하는지라 조사를 한 것을 바탕으로 이해하는데 집중하는쪽으로 진행하였습니다.  
+일단, 여러가지 함수들 중 ford-fulkerson 알고리즘에 핵심이 되는 함수는 max_flow 함수를 집중적으로 보면 좋을 것 같습니다. 
+```C
+int max_flow(int source, int sink) {
+    int i, j, u;
+    // 빈 유량을 초기화합니다.
+    int max_flow = 0;
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
+            flow[i][j] = 0;
+        }
+    }
+    // augmenting path(증가 경로)가 있는 동안, 이 경로를 따라 유량을 증가시킵니다.
+    while (bfs(source, sink)) {
+        // 유량을 증가시킬 수 있는 양을 결정합니다.
+        int increment = oo;
+        for (u = n - 1; pred[u] >= 0; u = pred[u]) {
+            increment = min(increment, capacity[pred[u]][u] - flow[pred[u]][u]);
+        }
+        // 이제 유량을 증가시킵니다.
+        for (u = n - 1; pred[u] >= 0; u = pred[u]) {
+            flow[pred[u]][u] += increment;
+            flow[u][pred[u]] -= increment;
+        }
+        max_flow += increment;
+    }
+    // 더 이상 경로가 없습니다. 마칩니다.
+    return max_flow;
+}
+```
+전체 코드는 ford-fulkerson.c로 올려두었습니다.  
+실행 시키기 전 다시 제가 설정했던 상황의 그림을 보겠습니다.  
+<center>
+<img src="image/중간1.png" img width="500px" height="300px"></img>
+<center>
+처음에 이런 상황이었는데요, 이제 실행시키기 위하여 노드 수와 간선(edge) 수를 세보면 4개, 5개가 됩니다. 또한 코드를 실행시키기 위하여 S를 0, a를 1, b를 2, T를 3으로 놓겠습니다.  
+그럼 이제 가중치를 고려하면, 노드 0과 1사이에 가중치 1, 0과 2 사이에 2 이런식으로 모든 경우를 data.txt에 기입해줍니다.  
+<center>
+<img src="image/data입력값.png" img width="400px" height="300px"></img>
+<center>
+이제 실행시켜 주면 결과가 출력됩니다.  
+<center>
+<img src="image/출력.png" img width="500px" height="300px"></img>
+<center>  
+
+## 시간복잡도
+---
+ford-fulkerson 알고리즘의 시간복잡도는 O(VE^2)입니다. 
+간단히 설명 해보자면 최단거리를 고정하면 O(E)개의 증가경로만 찾게 되고, 최단거리는 V이하이므로 VE번 증가 경로를 찾는 것을 알 수 있고, 시간복잡도는 O(VE^2)이 되는 것입니다.  
+
+여담으로, 조사하다가 DFS쓸 때를 ford-fulkerson, BFS쓸 때를 edmons-karp알고리즘이라고 한다는 것을 봤는데 대다수의 블로그나 해외자료에서는 BFS나 DFS 아무거나 사용했고 이 두 알고리즘을 크게 ford-fulkerson방법론이라 불리는 것 같다. 결론은 BFS가 DFS보다 간단해 BFS를 선호하는 경우가 많은 것 같다.
